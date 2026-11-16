@@ -1,0 +1,349 @@
+<form class="gv-card content-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <h2 class="form-heading">{{ formHeading() }}</h2>
+  <p class="form-hint">Yıldızlı (*) alanlar zorunludur.</p>
+
+  @if (serviceError(); as error) {
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+  }
+
+  <fieldset class="row g-3 mb-3">
+    <legend class="section-legend">Temel bilgiler</legend>
+
+    <div class="col-12">
+      <label for="content-title" class="form-label">İçerik başlığı *</label>
+      <input
+        id="content-title"
+        type="text"
+        class="form-control"
+        formControlName="title"
+        autocomplete="off"
+        required
+        [class.is-invalid]="showError('title')"
+        [attr.aria-invalid]="showError('title')"
+        [attr.aria-describedby]="showError('title') ? 'title-error' : null"
+      />
+      @if (showError('title')) {
+        <div id="title-error" class="field-error">{{ errorMessage('title') }}</div>
+      }
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-platform" class="form-label d-flex align-items-center gap-2">
+        <span>Platform *</span>
+        @if (selectedPlatformLogo(); as logoUrl) {
+          <img
+            class="select-platform-logo"
+            [src]="logoUrl"
+            alt=""
+            aria-hidden="true"
+            width="18"
+            height="18"
+          />
+        }
+      </label>
+      <select
+        id="content-platform"
+        class="form-select"
+        formControlName="platform"
+        required
+        [class.is-invalid]="showError('platform')"
+        [attr.aria-invalid]="showError('platform')"
+        [attr.aria-describedby]="showError('platform') ? 'platform-error' : null"
+      >
+        <option value="" disabled>Platform seç</option>
+        @for (option of platforms; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (showError('platform')) {
+        <div id="platform-error" class="field-error">{{ errorMessage('platform') }}</div>
+      }
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-type" class="form-label">İçerik türü *</label>
+      <select
+        id="content-type"
+        class="form-select"
+        formControlName="contentType"
+        required
+        [class.is-invalid]="showError('contentType')"
+        [attr.aria-invalid]="showError('contentType')"
+        [attr.aria-describedby]="showError('contentType') ? 'type-error' : null"
+      >
+        <option value="" disabled>Tür seç</option>
+        @for (option of types; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (showError('contentType')) {
+        <div id="type-error" class="field-error">{{ errorMessage('contentType') }}</div>
+      }
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-game" class="form-label">Oyun veya etkinlik adı</label>
+      <input
+        id="content-game"
+        type="text"
+        class="form-control"
+        formControlName="gameOrEvent"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-status" class="form-label">Durum *</label>
+      <select
+        id="content-status"
+        class="form-select"
+        formControlName="status"
+        required
+        [class.is-invalid]="showError('status')"
+        [attr.aria-invalid]="showError('status')"
+        [attr.aria-describedby]="showError('status') ? 'status-error' : null"
+      >
+        @for (option of statuses; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (showError('status')) {
+        <div id="status-error" class="field-error">{{ errorMessage('status') }}</div>
+      }
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-date" class="form-label">Tarih *</label>
+      <input
+        id="content-date"
+        type="date"
+        class="form-control"
+        formControlName="date"
+        required
+        [class.is-invalid]="showError('date')"
+        [attr.aria-invalid]="showError('date')"
+        [attr.aria-describedby]="showError('date') ? 'date-error' : null"
+      />
+      @if (showError('date')) {
+        <div id="date-error" class="field-error">{{ errorMessage('date') }}</div>
+      }
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-time" class="form-label">Saat (24 saat, SS:dd) *</label>
+      <input
+        id="content-time"
+        type="text"
+        class="form-control"
+        formControlName="time"
+        inputmode="numeric"
+        placeholder="21:00"
+        maxlength="5"
+        autocomplete="off"
+        required
+        [class.is-invalid]="showError('time')"
+        [attr.aria-invalid]="showError('time')"
+        [attr.aria-describedby]="showError('time') ? 'time-error time-help' : 'time-help'"
+      />
+      <div id="time-help" class="visually-hidden">Hızlı saat butonlarını kullanabilir veya kendi saatini yazabilirsin.</div>
+      @if (showError('time')) {
+        <div id="time-error" class="field-error">{{ errorMessage('time') }}</div>
+      }
+      <div class="quick-times" role="group" aria-label="Hızlı yayın saatleri">
+        @for (time of quickTimes; track time) {
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light"
+            [attr.aria-label]="'Saati ' + time + ' olarak ayarla'"
+            (click)="setQuickTime(time)"
+          >
+            {{ time }}
+          </button>
+        }
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="row g-3 mb-3">
+    <legend class="section-legend">Ek bilgiler</legend>
+
+    <div class="col-12">
+      <label for="content-description" class="form-label">Açıklama</label>
+      <textarea id="content-description" class="form-control" rows="3" formControlName="description"></textarea>
+    </div>
+
+    <div class="col-12">
+      <label for="content-notes" class="form-label">Notlar</label>
+      <textarea id="content-notes" class="form-control" rows="2" formControlName="notes"></textarea>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-team" class="form-label">Ekip üyeleri</label>
+      <div class="quick-select-wrap team-quick-select">
+        <div class="quick-select-input-group">
+          <input
+            id="content-team"
+            type="text"
+            class="form-control"
+            formControlName="team"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="team-suggestions-listbox"
+            [attr.aria-expanded]="teamMenuOpen()"
+            aria-describedby="team-help"
+            (input)="onTeamInput($any($event.target).value)"
+            (keydown)="onTeamKeydown($event)"
+          />
+          <button
+            id="toggle-team-suggestions"
+            type="button"
+            class="quick-select-toggle"
+            aria-label="Önceden kullanılan ekip üyelerini göster"
+            aria-controls="team-suggestions-listbox"
+            [attr.aria-expanded]="teamMenuOpen()"
+            (click)="toggleTeamMenu()"
+            (keydown)="onTeamKeydown($event)"
+          >
+            <span aria-hidden="true">▾</span>
+          </button>
+        </div>
+
+        @if (teamMenuOpen()) {
+          <ul
+            id="team-suggestions-listbox"
+            class="quick-select-menu"
+            role="listbox"
+            aria-label="Önceden kullanılan ekip üyeleri"
+          >
+            @if (filteredTeamSuggestions().length === 0) {
+              <li class="quick-select-empty" role="option" aria-disabled="true">
+                Önerilecek başka ekip üyesi bulunmuyor.
+              </li>
+            } @else {
+              @for (suggestion of filteredTeamSuggestions(); track suggestion.key; let idx = $index) {
+                <li
+                  role="option"
+                  class="quick-select-option"
+                  [class.is-active]="activeTeamIndex() === idx"
+                  [attr.aria-selected]="activeTeamIndex() === idx"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="selectTeamSuggestion(suggestion.name)"
+                >
+                  <span class="quick-select-option-label">{{ suggestion.name }}</span>
+                  <span class="quick-select-option-count">{{ suggestion.count }} içerikte</span>
+                </li>
+              }
+            }
+          </ul>
+        }
+      </div>
+      <div id="team-help" class="form-hint">Virgülle ayır veya listeden seç. Örnek: GÖGÖ, Samurai Cat, Şogunlar</div>
+      @if (currentTeam().length > 0) {
+        <div class="tag-badge-list form-team-list mt-2" role="group" aria-label="Bu içeriğin ekip üyeleri">
+          @for (member of currentTeam(); track member) {
+            <span class="tag-badge form-tag-chip form-team-chip">
+              <span>{{ member }}</span>
+              <button
+                type="button"
+                class="tag-remove-btn"
+                [attr.aria-label]="member + ' ekip üyesini bu içerikten kaldır'"
+                (click)="removeTeamMemberFromForm(member)"
+              >
+                ×
+              </button>
+            </span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="content-tags" class="form-label">Etiketler</label>
+      <div class="quick-select-wrap tag-quick-select">
+        <div class="quick-select-input-group">
+          <input
+            id="content-tags"
+            type="text"
+            class="form-control"
+            formControlName="tags"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="tag-suggestions-listbox"
+            [attr.aria-expanded]="tagMenuOpen()"
+            aria-describedby="tags-help"
+            (input)="onTagsInput($any($event.target).value)"
+            (keydown)="onTagsKeydown($event)"
+          />
+          <button
+            id="toggle-tag-suggestions"
+            type="button"
+            class="quick-select-toggle"
+            aria-label="Önceden kullanılan etiketleri göster"
+            aria-controls="tag-suggestions-listbox"
+            [attr.aria-expanded]="tagMenuOpen()"
+            (click)="toggleTagMenu()"
+            (keydown)="onTagsKeydown($event)"
+          >
+            <span aria-hidden="true">▾</span>
+          </button>
+        </div>
+
+        @if (tagMenuOpen()) {
+          <ul
+            id="tag-suggestions-listbox"
+            class="quick-select-menu"
+            role="listbox"
+            aria-label="Önceden kullanılan etiketler"
+          >
+            @if (filteredTagSuggestions().length === 0) {
+              <li class="quick-select-empty" role="option" aria-disabled="true">
+                Önerilecek başka etiket bulunmuyor.
+              </li>
+            } @else {
+              @for (suggestion of filteredTagSuggestions(); track suggestion.key; let idx = $index) {
+                <li
+                  role="option"
+                  class="quick-select-option"
+                  [class.is-active]="activeTagIndex() === idx"
+                  [attr.aria-selected]="activeTagIndex() === idx"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="selectTagSuggestion(suggestion.tag)"
+                >
+                  <span class="quick-select-option-label">{{ suggestion.label }}</span>
+                  <span class="quick-select-option-count">{{ suggestion.count }} içerikte</span>
+                </li>
+              }
+            }
+          </ul>
+        }
+      </div>
+      <div id="tags-help" class="form-hint">Virgülle ayır veya listeden seç. Örnek: kick, minecraft, yayın, eğlence</div>
+      @if (currentTags().length > 0) {
+        <div class="tag-badge-list form-tag-list mt-2" role="group" aria-label="Bu içeriğin etiketleri">
+          @for (tag of currentTags(); track tag) {
+            @if (formatTagLabel(tag); as hashtag) {
+              <span class="tag-badge form-tag-chip">
+                <span>{{ hashtag }}</span>
+                <button
+                  type="button"
+                  class="tag-remove-btn"
+                  [attr.aria-label]="hashtag + ' etiketini bu içerikten kaldır'"
+                  (click)="removeTagFromForm(tag)"
+                >
+                  ×
+                </button>
+              </span>
+            }
+          }
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{ submitLabel() }}</button>
+    <button type="button" class="btn btn-outline-light" (click)="cancelled.emit()">Vazgeç</button>
+  </div>
+</form>

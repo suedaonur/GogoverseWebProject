@@ -1,0 +1,256 @@
+:host {
+  display: block;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1040;
+  width: var(--gv-sidebar-width);
+  max-width: 85vw;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem 1rem;
+  background-color: var(--gv-sidebar);
+  border-right: 1px solid var(--gv-border);
+  overflow-y: auto;
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition:
+    transform var(--gv-transition),
+    visibility 0s linear 0.25s;
+}
+
+.sidebar.is-open {
+  transform: translateX(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  color: var(--gv-text);
+  text-decoration: none;
+  border-radius: var(--gv-radius);
+}
+
+.brand-logo {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  background-color: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--gv-border);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-name {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--gv-primary-hover);
+  overflow-wrap: anywhere;
+}
+
+.brand-tagline {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--gv-text-muted);
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--gv-radius);
+  border: 1px solid transparent;
+  color: var(--gv-text);
+  text-decoration: none;
+  font-weight: 500;
+  transition:
+    background-color var(--gv-transition),
+    border-color var(--gv-transition);
+}
+
+a.nav-item:hover {
+  background-color: var(--gv-surface-alt);
+  border-color: var(--gv-border);
+}
+
+.nav-item.is-active {
+  background-color: var(--gv-primary);
+  color: #fff;
+  box-shadow: var(--gv-shadow);
+}
+
+.nav-item.is-disabled {
+  color: var(--gv-text-muted);
+  cursor: not-allowed;
+}
+
+.soon-badge {
+  flex: none;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--gv-border);
+  color: var(--gv-text-muted);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gv-border);
+  font-size: 0.8rem;
+  color: var(--gv-text-muted);
+}
+
+.sidebar-footer strong {
+  color: var(--gv-text);
+  letter-spacing: 0.05em;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1030;
+  border: 0;
+  padding: 0;
+  background-color: rgba(8, 4, 14, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--gv-transition);
+}
+
+.backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.content-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--gv-bg);
+  border-bottom: 1px solid var(--gv-border);
+}
+
+.topbar-text {
+  min-width: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.page-description {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--gv-text-muted);
+}
+
+.icon-button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  font-size: 1.15rem;
+  color: var(--gv-text);
+  background-color: var(--gv-surface);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius);
+  transition: background-color var(--gv-transition);
+}
+
+.icon-button:hover {
+  background-color: var(--gv-surface-alt);
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 1.25rem 1rem 2rem;
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    transform: none;
+    visibility: visible;
+    transition: none;
+  }
+
+  .backdrop {
+    display: none;
+  }
+
+  .content-column {
+    margin-left: var(--gv-sidebar-width);
+  }
+
+  .topbar {
+    padding: 1.25rem 2rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .main-content {
+    padding: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .backdrop {
+    transition: none;
+  }
+}

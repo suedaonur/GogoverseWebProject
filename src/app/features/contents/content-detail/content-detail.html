@@ -1,0 +1,191 @@
+<div class="detail-nav mb-3 d-flex flex-wrap gap-2">
+  <a
+    class="back-link btn btn-sm btn-outline-light"
+    [routerLink]="['/icerikler']"
+    [queryParams]="listQueryParams()"
+  >
+    ← İçerik Listesine Dön
+  </a>
+  @if (fromCalendar()) {
+    <a
+      class="back-calendar-link btn btn-sm btn-outline-light"
+      [routerLink]="['/takvim']"
+      [queryParams]="calendarQueryParams()"
+    >
+      ← Takvime Dön
+    </a>
+  }
+  @if (fromArchive()) {
+    <a
+      class="back-archive-link btn btn-sm btn-outline-light"
+      [routerLink]="['/arsiv']"
+      [queryParams]="archiveQueryParams()"
+    >
+      ← Arşive Dön
+    </a>
+  }
+</div>
+
+@if (loadError()) {
+  <div class="alert alert-danger load-error" role="alert">
+    <p class="mb-1">
+      <strong>
+        İçerik verileri yüklenemedi. Kayıtlarının korunması için değişiklik işlemleri durduruldu.
+      </strong>
+    </p>
+    <p class="mb-2 small">{{ loadError() }}</p>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="reload()">
+      Yeniden dene
+    </button>
+  </div>
+} @else if (item(); as content) {
+  <article class="gv-card detail-card" aria-labelledby="detail-heading">
+    <header class="detail-header">
+      <div class="detail-title-group">
+        <span class="platform-badge">
+          <img
+            class="platform-logo"
+            [src]="platformLogos[content.platform]"
+            alt=""
+            aria-hidden="true"
+            width="24"
+            height="24"
+          />
+          <span>{{ platformLabels[content.platform] }}</span>
+        </span>
+        <h2 id="detail-heading" class="detail-title">{{ content.title }}</h2>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="status status-{{ content.status }}">{{ statusLabels[content.status] }}</span>
+        <a
+          class="btn btn-sm btn-primary create-draft-link"
+          [routerLink]="['/taslaklar']"
+          [queryParams]="{ icerik: content.id }"
+        >
+          Metin Taslağı Oluştur
+        </a>
+      </div>
+    </header>
+
+    <div class="row g-3 detail-grid">
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="detail-field">
+          <span class="field-label">Platform</span>
+          <span class="field-value">{{ platformLabels[content.platform] }}</span>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="detail-field">
+          <span class="field-label">İçerik Türü</span>
+          <span class="field-value">{{ typeLabels[content.contentType] }}</span>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="detail-field">
+          <span class="field-label">Tarih</span>
+          <span class="field-value">{{ formatDate(content.date) }}</span>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="detail-field">
+          <span class="field-label">Saat</span>
+          <span class="field-value">{{ content.time }}</span>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="detail-field">
+          <span class="field-label">Oyun veya Etkinlik</span>
+          <span class="field-value" [class.is-empty]="!content.gameOrEvent">
+            {{ content.gameOrEvent || 'Belirtilmedi' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="detail-field">
+          <span class="field-label">Durum</span>
+          <span class="field-value">{{ statusLabels[content.status] }}</span>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="detail-field">
+          <span class="field-label">Açıklama</span>
+          <p class="field-text mb-0" [class.is-empty]="!content.description">
+            {{ content.description || 'Belirtilmedi' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="detail-field">
+          <span class="field-label">Notlar</span>
+          <p class="field-text mb-0" [class.is-empty]="!content.notes">
+            {{ content.notes || 'Belirtilmedi' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="detail-field">
+          <span class="field-label">Ekip Üyeleri</span>
+          @if (content.team.length > 0) {
+            <ul class="chip-list" aria-label="Ekip üyeleri">
+              @for (member of content.team; track member) {
+                <li class="chip">{{ member }}</li>
+              }
+            </ul>
+          } @else {
+            <span class="field-value is-empty">Belirtilmedi</span>
+          }
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="detail-field">
+          <span class="field-label">Etiketler</span>
+          @if (content.tags.length > 0) {
+            <ul class="chip-list" aria-label="Etiketler">
+              @for (tag of content.tags; track tag) {
+                @if (formatTagLabel(tag); as hashtag) {
+                  <li class="chip chip-tag">{{ hashtag }}</li>
+                }
+              }
+            </ul>
+          } @else {
+            <span class="field-value is-empty">Belirtilmedi</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <footer class="detail-timestamps">
+      <div>
+        <span class="timestamp-label">Oluşturulma zamanı:</span>
+        <time [attr.datetime]="content.createdAt">{{ formatDateTime(content.createdAt) }}</time>
+      </div>
+      <div>
+        <span class="timestamp-label">Son güncellenme zamanı:</span>
+        <time [attr.datetime]="content.updatedAt">{{ formatDateTime(content.updatedAt) }}</time>
+      </div>
+    </footer>
+  </article>
+} @else {
+  <section class="gv-card not-found-card" role="status">
+    <h2 class="not-found-title">Aradığın içerik bulunamadı.</h2>
+    <p class="not-found-text">
+      Bu içerik silinmiş olabilir veya bağlantı adresi geçersizdir.
+    </p>
+    <a
+      class="btn btn-primary"
+      [routerLink]="['/icerikler']"
+      [queryParams]="listQueryParams()"
+    >
+      İçerik Listesine Dön
+    </a>
+  </section>
+}

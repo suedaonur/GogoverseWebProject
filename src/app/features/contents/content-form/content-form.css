@@ -1,0 +1,225 @@
+:host {
+  display: block;
+}
+
+.content-form {
+  padding: 1.25rem;
+  color-scheme: dark;
+}
+
+.form-heading {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: var(--gv-text-muted);
+  margin-top: 0.25rem;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.section-legend {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gv-primary-hover);
+  margin-top: 1rem;
+  padding: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.select-platform-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex: none;
+}
+
+.form-control,
+.form-select {
+  background-color: var(--gv-bg);
+  color: var(--gv-text);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius);
+  min-height: 44px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--gv-bg);
+  color: var(--gv-text);
+  border-color: var(--gv-primary-hover);
+  box-shadow: var(--gv-focus);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: #ff8a9b;
+  background-image: none;
+}
+
+.field-error {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #ff9aa8;
+}
+
+.quick-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.quick-times .btn {
+  min-height: 40px;
+  min-width: 64px;
+}
+
+.quick-select-wrap {
+  position: relative;
+}
+
+.quick-select-input-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.quick-select-input-group .form-control {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.quick-select-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  background-color: var(--gv-surface-alt);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius);
+  color: var(--gv-text);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.quick-select-toggle:hover {
+  border-color: var(--gv-primary-hover);
+  background-color: rgba(139, 92, 246, 0.18);
+}
+
+.quick-select-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  background-color: var(--gv-surface);
+  border: 1px solid var(--gv-primary-hover);
+  border-radius: var(--gv-radius);
+  box-shadow: var(--gv-shadow);
+}
+
+.quick-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.quick-select-option:hover,
+.quick-select-option.is-active {
+  background-color: rgba(139, 92, 246, 0.24);
+  color: var(--gv-text);
+}
+
+.quick-select-option-label {
+  font-weight: 600;
+  color: var(--gv-primary-hover);
+}
+
+.quick-select-option-count,
+.quick-select-empty {
+  font-size: 0.78rem;
+  color: var(--gv-text-muted);
+}
+
+.quick-select-empty {
+  padding: 0.5rem 0.65rem;
+}
+
+.form-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-right: 0.3rem;
+}
+
+.tag-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--gv-text);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-remove-btn:hover {
+  background-color: rgba(255, 138, 155, 0.3);
+  color: #ffd5dc;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.form-actions .btn {
+  min-height: 44px;
+  min-width: 110px;
+}
+
+@media (max-width: 575.98px) {
+  .form-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+@media (min-width: 992px) {
+  .content-form {
+    padding: 1.75rem;
+  }
+}

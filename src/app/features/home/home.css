@@ -1,0 +1,252 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.welcome,
+.next-kick-card,
+.upcoming-item,
+.panel-header,
+.stat-top,
+.platform-dist-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.welcome,
+.next-kick-card {
+  padding: 1.25rem 1.5rem;
+  border-left: 4px solid var(--gv-accent);
+}
+
+.next-kick-card {
+  border-left-color: #4ade80;
+}
+
+.welcome-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.welcome-logo {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  background-color: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--gv-border);
+}
+
+.welcome-copy,
+.next-kick-info,
+.upcoming-main {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.welcome-title {
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.welcome-text,
+.stat-label,
+.platform-dist-count,
+.todo-counter-label {
+  color: var(--gv-text-muted);
+}
+
+.section-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+.stat-card {
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-top: 3px solid var(--gv-accent);
+}
+
+.stat-planned {
+  border-top-color: var(--gv-primary-hover);
+}
+
+.stat-progress {
+  border-top-color: #fbbf24;
+}
+
+.stat-completed {
+  border-top-color: #4ade80;
+}
+
+.stat-cancelled {
+  border-top-color: var(--gv-border);
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.stat-icon {
+  color: var(--gv-primary-hover);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.next-kick-header,
+.upcoming-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.next-kick-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #86efac;
+}
+
+.next-kick-title,
+.upcoming-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+  overflow-wrap: anywhere;
+}
+
+.next-kick-meta,
+.upcoming-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  color: var(--gv-text-muted);
+}
+
+.panel-card {
+  padding: 1.25rem;
+  min-width: 0;
+}
+
+.panel-header {
+  margin-bottom: 1rem;
+}
+
+.panel-link {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gv-primary-hover);
+  text-decoration: none;
+}
+
+.panel-link:hover {
+  text-decoration: underline;
+}
+
+.empty-message {
+  padding: 1rem;
+  border-radius: var(--gv-radius);
+  background-color: var(--gv-bg);
+  border: 1px dashed var(--gv-border);
+  color: var(--gv-text-muted);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.upcoming-list,
+.platform-dist-list,
+.todo-preview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upcoming-item,
+.todo-counter,
+.todo-preview-item {
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--gv-radius);
+  background-color: var(--gv-bg);
+  border: 1px solid var(--gv-border);
+}
+
+.platform-dist-row {
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+}
+
+.platform-dist-count strong {
+  color: var(--gv-text);
+}
+
+.dist-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--gv-bg);
+  border: 1px solid var(--gv-border);
+  overflow: hidden;
+}
+
+.dist-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gv-primary), var(--gv-primary-hover));
+  transition: width var(--gv-transition);
+}
+
+.todo-counters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.todo-counter {
+  text-align: center;
+}
+
+.todo-counter-label {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.todo-counter-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.todo-preview-item {
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 575.98px) {
+  .welcome-actions,
+  .welcome-actions .btn {
+    width: 100%;
+  }
+}

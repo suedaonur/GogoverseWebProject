@@ -1,0 +1,146 @@
+<div class="layout">
+  <aside id="sidebar" class="sidebar" [class.is-open]="menuOpen()" aria-label="Kenar çubuğu">
+    <div class="sidebar-top">
+      <a class="brand" routerLink="/" (click)="closeMenu()">
+        <img
+          class="brand-logo"
+          src="assets/kedi_logo_bir.jpeg"
+          alt="GÖGÖVERSE Samurai Cat logosu"
+          width="44"
+          height="44"
+        />
+        <span class="brand-text">
+          <span class="brand-name">GÖGÖVERSE WEB</span>
+          <span class="brand-tagline">Şogunların İçerik Yönetim Merkezi</span>
+        </span>
+      </a>
+      <button
+        #closeButton
+        type="button"
+        class="icon-button d-lg-none"
+        aria-label="Menüyü kapat"
+        (click)="closeMenu(true)"
+      >
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Ana gezinme">
+      <ul class="nav-list">
+        @for (item of navItems; track item.label) {
+          <li>
+            @if (item.path) {
+              <a
+                class="nav-item"
+                [routerLink]="item.path"
+                routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+                ariaCurrentWhenActive="page"
+                (click)="closeMenu()"
+              >
+                {{ item.label }}
+              </a>
+            } @else {
+              <span class="nav-item is-disabled" aria-disabled="true">
+                <span>{{ item.label }}</span>
+                <span class="soon-badge">Yakında</span>
+              </span>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <footer class="sidebar-footer">
+      <strong>GÖGÖVERSE</strong>
+      <span>Şogunlar için içerik planlama merkezi.</span>
+    </footer>
+  </aside>
+
+  <button
+    type="button"
+    class="backdrop"
+    [class.is-visible]="menuOpen()"
+    tabindex="-1"
+    aria-hidden="true"
+    (click)="closeMenu(true)"
+  ></button>
+
+  <div class="content-column" [attr.inert]="menuOpen() ? '' : null">
+    <header class="topbar">
+      <button
+        #menuButton
+        type="button"
+        class="icon-button d-lg-none"
+        aria-label="Menüyü aç"
+        aria-controls="sidebar"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="openMenu()"
+      >
+        <span aria-hidden="true">☰</span>
+      </button>
+      <div class="topbar-text">
+        <h1 class="page-title">{{ page().title }}</h1>
+        @if (page().description) {
+          <p class="page-description">{{ page().description }}</p>
+        }
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="workspace-shell">
+        <div class="workspace-primary">
+          <router-outlet />
+        </div>
+        <aside class="workspace-banner-aside" aria-label="GÖGÖVERSE Görsel Vitrin">
+          <div class="gv-card side-banner-card">
+            <div class="side-banner-media">
+              <img
+                class="side-banner-img"
+                src="assets/banner.webp"
+                alt="GÖGÖVERSE Samuray Kedi Görseli"
+                loading="lazy"
+              />
+              <span class="side-banner-badge">GÖGÖVERSE STUDIO</span>
+            </div>
+            <div class="side-banner-body">
+              <span class="tag-badge mb-2">#gogoverse</span>
+              <h2 class="side-banner-title">Şogunların Yayın &amp; İçerik Üssü</h2>
+              <p class="side-banner-desc">
+                Kick, Discord, Instagram ve TikTok içerik akışlarını tek merkezden planlayın, arşivleyin ve paylaşım taslaklarını yönetin.
+              </p>
+              <div class="side-banner-platforms" aria-label="Desteklenen Platformlar">
+                <span class="platform-badge side-platform-pill">
+                  <img class="platform-logo" src="assets/platforms/kick_platform_logo.webp" alt="" aria-hidden="true" />
+                  <span>Kick</span>
+                </span>
+                <span class="platform-badge side-platform-pill">
+                  <img class="platform-logo" src="assets/platforms/discord_logo.webp" alt="" aria-hidden="true" />
+                  <span>Discord</span>
+                </span>
+                <span class="platform-badge side-platform-pill">
+                  <img class="platform-logo" src="assets/platforms/instagram_logo.webp" alt="" aria-hidden="true" />
+                  <span>Instagram</span>
+                </span>
+                <span class="platform-badge side-platform-pill">
+                  <img class="platform-logo" src="assets/platforms/tiktok_logo.webp" alt="" aria-hidden="true" />
+                  <span>TikTok</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="gv-card side-banner-card side-banner-photo-card">
+            <img
+              class="side-banner-photo"
+              src="assets/banner-iki.webp"
+              alt="Kimonolu iki samuray kedi kiraz çiçekli bir bahçede yan yana oturuyor"
+              width="960"
+              height="1200"
+              loading="lazy"
+            />
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>

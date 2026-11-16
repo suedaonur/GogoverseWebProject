@@ -1,0 +1,333 @@
+<div class="visually-hidden" role="status" aria-live="polite">
+  @if (!loadError() && completedItems().length > 0) {
+    {{ completedItems().length }} tamamlanan içerikten {{ filteredItems().length }} tanesi gösteriliyor.
+  }
+</div>
+
+@if (loadError()) {
+  <div class="alert alert-danger load-error" role="alert">
+    <p class="mb-1">
+      <strong>
+        Arşiv verileri yüklenemedi. Mevcut kayıtlarının korunması için veri işlemleri durduruldu.
+      </strong>
+    </p>
+    <p class="mb-2 small">{{ loadError() }}</p>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="reload()">
+      Yeniden dene
+    </button>
+  </div>
+} @else {
+  <section class="mb-4" aria-labelledby="archive-stats-heading">
+    <h2 id="archive-stats-heading" class="section-title">Arşiv İstatistikleri</h2>
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <article class="gv-card archive-total-card h-100">
+          <div class="archive-total-top">
+            <span class="archive-total-label">Toplam Tamamlanan İçerik</span>
+            <span class="archive-total-icon" aria-hidden="true">✓</span>
+          </div>
+          <p class="archive-total-value mb-1" data-archive-stat="total">
+            {{ completedItems().length }}
+          </p>
+          <p class="archive-total-hint mb-0">
+            Durumu Tamamlandı olarak işaretlenen tüm geçmiş ve tamamlanmış kayıtlar.
+          </p>
+        </article>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <article class="gv-card archive-dist-card h-100" aria-labelledby="archive-platform-dist-heading">
+          <h3 id="archive-platform-dist-heading" class="dist-heading">
+            Tamamlanan İçeriklerin Platform Dağılımı
+          </h3>
+          <div class="row row-cols-1 row-cols-sm-2 g-3">
+            @for (entry of platformDistribution(); track entry.platform) {
+              <div class="col">
+                <div class="platform-dist-item" [attr.data-archive-platform]="entry.platform">
+                  <div class="platform-dist-row">
+                    <span class="platform-badge">
+                      <img
+                        class="platform-logo"
+                        [src]="entry.logo"
+                        alt=""
+                        aria-hidden="true"
+                        width="22"
+                        height="22"
+                      />
+                      <span>{{ entry.label }}</span>
+                    </span>
+                    <span class="platform-dist-count">
+                      <strong>{{ entry.count }}</strong> içerik
+                      <span class="platform-dist-pct">(%{{ entry.percentage }})</span>
+                    </span>
+                  </div>
+                  <div
+                    class="dist-bar-track"
+                    role="progressbar"
+                    [attr.aria-label]="entry.label + ' tamamlanan içerik oranı'"
+                    [attr.aria-valuenow]="entry.percentage"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  >
+                    <div class="dist-bar-fill" [style.width.%]="entry.percentage"></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="gv-card filter-panel mb-4" aria-label="Arşiv arama, filtreleme ve sıralama">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-lg-6">
+        <label for="archive-query" class="form-label">Arşivde Ara</label>
+        <input
+          id="archive-query"
+          type="search"
+          class="form-control"
+          placeholder="Geçmiş yayın, oyun, ekip veya etiket ara..."
+          autocomplete="off"
+          [value]="filters().query"
+          (input)="updateQuery($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="archive-platform" class="form-label d-flex align-items-center gap-2">
+          <span>Platform</span>
+          @if (filters().platform; as selectedPlatform) {
+            <img
+              class="select-platform-logo"
+              [src]="platformLogos[selectedPlatform]"
+              alt=""
+              aria-hidden="true"
+              width="18"
+              height="18"
+            />
+          }
+        </label>
+        <select
+          id="archive-platform"
+          class="form-select"
+          [value]="filters().platform"
+          (change)="updatePlatform($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().platform === ''">Tüm Platformlar</option>
+          @for (option of platformOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().platform === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="archive-type" class="form-label">İçerik Türü</label>
+        <select
+          id="archive-type"
+          class="form-select"
+          [value]="filters().contentType"
+          (change)="updateContentType($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().contentType === ''">Tüm Türler</option>
+          @for (option of typeOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().contentType === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="archive-tag" class="form-label">Etiket</label>
+        <select
+          id="archive-tag"
+          class="form-select"
+          [value]="filters().tag"
+          (change)="updateTag($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().tag === ''">Tüm Etiketler</option>
+          @for (tag of availableTags(); track tag) {
+            <option [value]="tag" [selected]="filters().tag === tag">
+              {{ formatTagLabel(tag) }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="archive-from" class="form-label">Başlangıç Tarihi</label>
+        <input
+          id="archive-from"
+          type="date"
+          class="form-control"
+          [class.is-invalid]="dateRangeInvalid()"
+          [attr.aria-invalid]="dateRangeInvalid()"
+          [attr.aria-describedby]="dateRangeInvalid() ? 'archive-date-range-error' : null"
+          [value]="filters().dateFrom"
+          (input)="updateDateFrom($any($event.target).value)"
+          (change)="updateDateFrom($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="archive-to" class="form-label">Bitiş Tarihi</label>
+        <input
+          id="archive-to"
+          type="date"
+          class="form-control"
+          [class.is-invalid]="dateRangeInvalid()"
+          [attr.aria-invalid]="dateRangeInvalid()"
+          [attr.aria-describedby]="dateRangeInvalid() ? 'archive-date-range-error' : null"
+          [value]="filters().dateTo"
+          (input)="updateDateTo($any($event.target).value)"
+          (change)="updateDateTo($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="archive-sort" class="form-label">Sıralama</label>
+        <select
+          id="archive-sort"
+          class="form-select"
+          [value]="filters().sort"
+          (change)="updateSort($any($event.target).value)"
+        >
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().sort === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-auto ms-lg-auto">
+        <button
+          id="clear-archive-filters"
+          type="button"
+          class="btn btn-outline-light w-100"
+          [disabled]="!hasActiveFilters()"
+          (click)="clearFilters()"
+        >
+          Filtreleri Temizle
+        </button>
+      </div>
+    </div>
+
+    @if (dateRangeInvalid()) {
+      <div id="archive-date-range-error" class="date-range-error mt-2" role="alert">
+        Başlangıç tarihi, bitiş tarihinden sonra olamaz.
+      </div>
+    }
+  </section>
+
+  <section aria-labelledby="archive-list-heading">
+    <div class="list-header">
+      <h2 id="archive-list-heading" class="list-heading mb-0">
+        Tamamlanan İçerikler <span class="count">({{ completedItems().length }})</span>
+      </h2>
+      @if (completedItems().length > 0) {
+        <p class="result-summary mb-0">
+          {{ completedItems().length }} tamamlanan içerikten {{ filteredItems().length }} tanesi gösteriliyor.
+        </p>
+      }
+    </div>
+
+    @if (completedItems().length === 0) {
+      <p class="gv-card empty-state archive-empty-state mb-0">
+        Henüz tamamlanmış içerik bulunmuyor. İçeriklerini tamamlandı olarak işaretlediğinde burada görebilirsin.
+      </p>
+    } @else if (filteredItems().length === 0) {
+      <div class="gv-card empty-state filter-empty-state">
+        <p class="mb-3">Arama ve filtrelerine uygun tamamlanmış içerik bulunamadı.</p>
+        <button type="button" class="btn btn-sm btn-outline-light" (click)="clearFilters()">
+          Filtreleri Temizle
+        </button>
+      </div>
+    } @else {
+      <div class="gv-card table-wrap">
+        <table class="table gv-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Başlık</th>
+              <th scope="col">Platform</th>
+              <th scope="col">Tür</th>
+              <th scope="col">Oyun / Etkinlik</th>
+              <th scope="col">Planlanan Tarih</th>
+              <th scope="col">Saat</th>
+              <th scope="col">Durum</th>
+              <th scope="col">Ekip ve etiketler</th>
+              <th scope="col">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id) {
+              <tr>
+                <th scope="row" class="title-cell" data-label="Başlık">{{ item.title }}</th>
+                <td data-label="Platform">
+                  <span class="platform-badge">
+                    <img
+                      class="platform-logo"
+                      [src]="platformLogos[item.platform]"
+                      alt=""
+                      aria-hidden="true"
+                      width="22"
+                      height="22"
+                    />
+                    <span>{{ platformLabels[item.platform] }}</span>
+                  </span>
+                </td>
+                <td data-label="Tür">{{ typeLabels[item.contentType] }}</td>
+                <td data-label="Oyun / Etkinlik">{{ item.gameOrEvent || '—' }}</td>
+                <td data-label="Planlanan Tarih">{{ formatDate(item.date) }}</td>
+                <td data-label="Saat">{{ item.time }}</td>
+                <td data-label="Durum">
+                  <span class="status status-{{ item.status }}">{{ statusLabels[item.status] }}</span>
+                </td>
+                <td data-label="Ekip ve etiketler" class="meta-cell">
+                  @if (item.team.length === 0 && item.tags.length === 0) {
+                    —
+                  } @else {
+                    @if (item.team.length > 0) {
+                      <div class="meta-line">Ekip: {{ item.team.join(', ') }}</div>
+                    }
+                    @if (item.tags.length > 0) {
+                      <div class="tag-badge-list" aria-label="Etiketler">
+                        @for (tag of item.tags; track tag) {
+                          @if (formatTagLabel(tag); as hashtag) {
+                            <span class="tag-badge">{{ hashtag }}</span>
+                          }
+                        }
+                      </div>
+                    }
+                  }
+                </td>
+                <td data-label="İşlemler" class="actions-cell">
+                  <a
+                    class="btn btn-sm btn-outline-light"
+                    [routerLink]="['/icerikler', item.id]"
+                    [queryParams]="detailQueryParams()"
+                    [attr.aria-label]="'&quot;' + item.title + '&quot; arşiv içeriğinin detaylarını gör'"
+                  >
+                    Detayları Gör
+                  </a>
+                  <a
+                    class="btn btn-sm btn-primary reschedule-btn"
+                    [routerLink]="['/icerikler']"
+                    [queryParams]="{ yenidenPlanla: item.id }"
+                    [attr.aria-label]="'&quot;' + item.title + '&quot; içeriğini yeniden planla'"
+                  >
+                    Yeniden Planla
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+}

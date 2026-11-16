@@ -1,0 +1,257 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.archive-total-card,
+.archive-dist-card,
+.filter-panel {
+  padding: 1.25rem;
+}
+
+.filter-panel {
+  color-scheme: dark;
+}
+
+.archive-total-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.archive-total-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gv-text-muted);
+}
+
+.archive-total-icon {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.archive-total-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #86efac;
+}
+
+.archive-total-hint {
+  font-size: 0.8rem;
+  color: var(--gv-text-muted);
+}
+
+.dist-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+.platform-dist-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.platform-dist-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.platform-dist-count {
+  font-size: 0.82rem;
+}
+
+.platform-dist-pct {
+  color: var(--gv-text-muted);
+  margin-left: 0.2rem;
+}
+
+.dist-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--gv-surface-alt);
+  border: 1px solid var(--gv-border);
+  overflow: hidden;
+}
+
+.dist-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gv-primary), var(--gv-primary-hover));
+  transition: width var(--gv-transition);
+}
+
+.filter-panel .form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.filter-panel .form-control,
+.filter-panel .form-select {
+  background-color: var(--gv-bg);
+  color: var(--gv-text);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius);
+  min-height: 42px;
+}
+
+.filter-panel .form-control:focus,
+.filter-panel .form-select:focus {
+  background-color: var(--gv-bg);
+  color: var(--gv-text);
+  border-color: var(--gv-primary-hover);
+  box-shadow: var(--gv-focus);
+}
+
+.filter-panel .form-control.is-invalid {
+  border-color: #ff8a9b;
+  background-image: none;
+}
+
+.filter-panel .btn {
+  min-height: 42px;
+}
+
+.date-range-error {
+  font-size: 0.85rem;
+  color: #ff9aa8;
+}
+
+.list-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.list-heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.count,
+.result-summary,
+.meta-line {
+  font-size: 0.85rem;
+  color: var(--gv-text-muted);
+}
+
+.empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--gv-text-muted);
+}
+
+.table-wrap {
+  overflow: hidden;
+}
+
+.gv-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--gv-text);
+  --bs-table-border-color: var(--gv-border);
+  vertical-align: middle;
+}
+
+.gv-table th,
+.gv-table td {
+  padding: 0.85rem 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.gv-table thead th {
+  color: var(--gv-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.title-cell {
+  font-weight: 600;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.actions-cell .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  margin-right: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+@media (max-width: 767.98px) {
+  .table-wrap {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .gv-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .gv-table tr {
+    display: block;
+    margin-bottom: 0.85rem;
+    background-color: var(--gv-surface);
+    border: 1px solid var(--gv-border);
+    border-radius: var(--gv-radius);
+    padding: 0.5rem 0.25rem;
+  }
+
+  .gv-table th,
+  .gv-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 0;
+    padding: 0.4rem 0.75rem;
+    text-align: right;
+  }
+
+  .gv-table th::before,
+  .gv-table td::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--gv-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .actions-cell {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .actions-cell::before {
+    margin-right: auto;
+  }
+
+  .actions-cell .btn {
+    min-height: 44px;
+  }
+}

@@ -1,0 +1,127 @@
+:host {
+  display: block;
+  max-width: 960px;
+}
+
+.back-link {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.detail-card {
+  padding: 1.5rem;
+}
+
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--gv-border);
+}
+
+.detail-title-group {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.detail-title {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.3rem, 3.5vw, 1.75rem);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.detail-field {
+  background-color: var(--gv-bg);
+  border: 1px solid var(--gv-border);
+  border-radius: var(--gv-radius);
+  padding: 0.85rem 1rem;
+  height: 100%;
+  min-width: 0;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gv-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.field-value,
+.field-text {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.is-empty {
+  color: var(--gv-text-muted);
+  font-style: italic;
+}
+
+.chip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chip {
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background-color: var(--gv-surface-alt);
+  border: 1px solid var(--gv-border);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.chip-tag {
+  color: var(--gv-primary-hover);
+}
+
+.detail-timestamps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gv-border);
+  font-size: 0.82rem;
+  color: var(--gv-text-muted);
+}
+
+.timestamp-label {
+  margin-right: 0.35rem;
+  font-weight: 600;
+}
+
+.not-found-card {
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.not-found-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.not-found-text {
+  color: var(--gv-text-muted);
+  margin-bottom: 1.25rem;
+}
+
+@media (min-width: 992px) {
+  .detail-card {
+    padding: 2rem;
+  }
+}

@@ -1,0 +1,266 @@
+<section class="welcome gv-card mb-4" aria-labelledby="welcome-heading">
+  <div class="welcome-main">
+    <img class="welcome-logo" src="assets/kedi_logo_bir.jpeg" alt="GÖGÖVERSE Samurai Cat logosu" width="52"
+      height="52" />
+    <div class="welcome-copy">
+      <h2 id="welcome-heading" class="welcome-title">GÖGÖVERSE'e hoş geldin, Şogun!</h2>
+      <p class="welcome-text mb-0">
+        Yayınlarını, etkinliklerini ve içeriklerini tek merkezden takip et.
+      </p>
+    </div>
+  </div>
+  <div class="welcome-actions">
+    <a class="btn btn-primary" routerLink="/icerikler">İçerikleri Yönet</a>
+  </div>
+</section>
+
+@if (contentLoadError()) {
+<div class="alert alert-danger load-error mb-4" role="alert">
+  <p class="mb-1">
+    <strong>
+      İçerik verileri yüklenemedi. Mevcut kayıtlarının korunması için veri işlemleri durduruldu.
+    </strong>
+  </p>
+  <p class="mb-2 small">{{ contentLoadError() }}</p>
+  <button type="button" class="btn btn-sm btn-outline-light" (click)="reloadContents()">
+    Yeniden dene
+  </button>
+</div>
+} @else {
+<section class="mb-4" aria-labelledby="stats-heading">
+  <h2 id="stats-heading" class="section-title">İçerik İstatistikleri</h2>
+  <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3">
+    <div class="col">
+      <article class="gv-card stat-card stat-total h-100">
+        <div class="stat-top">
+          <span class="stat-label">Toplam İçerik</span>
+          <span class="stat-icon" aria-hidden="true">◈</span>
+        </div>
+        <p class="stat-value mb-0" data-stat="total">{{ stats().total }}</p>
+      </article>
+    </div>
+
+    <div class="col">
+      <article class="gv-card stat-card stat-planned h-100">
+        <div class="stat-top">
+          <span class="stat-label">Planlanan</span>
+          <span class="stat-icon" aria-hidden="true">◷</span>
+        </div>
+        <p class="stat-value mb-0" data-stat="planned">{{ stats().planned }}</p>
+      </article>
+    </div>
+
+    <div class="col">
+      <article class="gv-card stat-card stat-progress h-100">
+        <div class="stat-top">
+          <span class="stat-label">Devam Eden</span>
+          <span class="stat-icon" aria-hidden="true">▶</span>
+        </div>
+        <p class="stat-value mb-0" data-stat="in_progress">{{ stats().inProgress }}</p>
+      </article>
+    </div>
+
+    <div class="col">
+      <article class="gv-card stat-card stat-completed h-100">
+        <div class="stat-top">
+          <span class="stat-label">Tamamlanan</span>
+          <span class="stat-icon" aria-hidden="true">✓</span>
+        </div>
+        <p class="stat-value mb-0" data-stat="completed">{{ stats().completed }}</p>
+      </article>
+    </div>
+
+    <div class="col-12 col-md-4 col-xl">
+      <article class="gv-card stat-card stat-cancelled h-100">
+        <div class="stat-top">
+          <span class="stat-label">İptal Edilen</span>
+          <span class="stat-icon" aria-hidden="true">✕</span>
+        </div>
+        <p class="stat-value mb-0" data-stat="cancelled">{{ stats().cancelled }}</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+@if (nextKickStream(); as nextKick) {
+<section class="gv-card next-kick-card mb-4" aria-labelledby="next-kick-heading">
+  <div class="next-kick-info">
+    <div class="next-kick-header">
+      <span class="platform-badge">
+        <img class="platform-logo" [src]="platformLogos.kick" alt="" aria-hidden="true" width="22" height="22" />
+        <span>Kick</span>
+      </span>
+      <span id="next-kick-heading" class="next-kick-eyebrow">Sıradaki Kick Yayını</span>
+    </div>
+    <h3 class="next-kick-title">{{ nextKick.title }}</h3>
+    <div class="next-kick-meta">
+      <span>{{ formatDate(nextKick.date) }}</span>
+      <span>•</span>
+      <span>{{ nextKick.time }}</span>
+      @if (nextKick.gameOrEvent) {
+      <span>•</span>
+      <span>{{ nextKick.gameOrEvent }}</span>
+      }
+    </div>
+    @if (nextKick.tags.length > 0) {
+    <div class="tag-badge-list mt-2">
+      @for (tag of nextKick.tags; track tag) {
+      @if (formatTagLabel(tag); as hashtag) {
+      <span class="tag-badge">{{ hashtag }}</span>
+      }
+      }
+    </div>
+    }
+  </div>
+  <div class="next-kick-action">
+    <a class="btn btn-sm btn-outline-light" [routerLink]="['/icerikler', nextKick.id]"
+      [attr.aria-label]="'&quot;' + nextKick.title + '&quot; yayınının detaylarını gör'">
+      Detayları Gör
+    </a>
+  </div>
+</section>
+}
+}
+
+<div class="row g-4 mb-4">
+  @if (!contentLoadError()) {
+  <div class="col-12 col-xl-7">
+    <section class="gv-card panel-card h-100" aria-labelledby="upcoming-heading">
+      <div class="panel-header">
+        <h2 id="upcoming-heading" class="section-title mb-0">Yaklaşan İçerikler</h2>
+        <a class="panel-link" routerLink="/icerikler">Tümünü Gör →</a>
+      </div>
+
+      @if (upcomingContents().length === 0) {
+      <p class="empty-message mb-0">
+        Yaklaşan içerik bulunmuyor. Yeni bir yayın veya etkinlik planlayabilirsin.
+      </p>
+      } @else {
+      <ul class="upcoming-list">
+        @for (item of upcomingContents(); track item.id) {
+        <li class="upcoming-item">
+          <div class="upcoming-main">
+            <div class="upcoming-top">
+              <span class="platform-badge">
+                <img class="platform-logo" [src]="platformLogos[item.platform]" alt="" aria-hidden="true" width="20"
+                  height="20" />
+                <span>{{ platformLabels[item.platform] }}</span>
+              </span>
+              <span class="status status-{{ item.status }}">
+                {{ statusLabels[item.status] }}
+              </span>
+            </div>
+            <h3 class="upcoming-title">{{ item.title }}</h3>
+            <div class="upcoming-meta">
+              <span>{{ formatDate(item.date) }}</span>
+              <span>•</span>
+              <span>{{ item.time }}</span>
+              @if (item.gameOrEvent) {
+              <span>•</span>
+              <span>{{ item.gameOrEvent }}</span>
+              }
+            </div>
+            @if (item.tags.length > 0) {
+            <div class="tag-badge-list mt-1">
+              @for (tag of item.tags; track tag) {
+              @if (formatTagLabel(tag); as hashtag) {
+              <span class="tag-badge">{{ hashtag }}</span>
+              }
+              }
+            </div>
+            }
+          </div>
+          <div class="upcoming-action">
+            <a class="btn btn-sm btn-outline-light" [routerLink]="['/icerikler', item.id]"
+              [attr.aria-label]="'&quot;' + item.title + '&quot; içeriğinin detaylarını gör'">
+              Detayları Gör
+            </a>
+          </div>
+        </li>
+        }
+      </ul>
+      }
+    </section>
+  </div>
+  }
+
+  <div class="col-12 d-flex flex-column gap-4" [class.col-xl-5]="!contentLoadError()">
+    @if (!contentLoadError()) {
+    <section class="gv-card panel-card" aria-labelledby="platform-dist-heading">
+      <h2 id="platform-dist-heading" class="section-title">Platform Dağılımı</h2>
+      <ul class="platform-dist-list">
+        @for (entry of platformDistribution(); track entry.platform) {
+        <li class="platform-dist-item" [attr.data-platform]="entry.platform">
+          <div class="platform-dist-row">
+            <span class="platform-badge">
+              <img class="platform-logo" [src]="entry.logo" alt="" aria-hidden="true" width="22" height="22" />
+              <span>{{ entry.label }}</span>
+            </span>
+            <span class="platform-dist-count">
+              <strong>{{ entry.count }}</strong> içerik
+              <span class="platform-dist-pct">(%{{ entry.percentage }})</span>
+            </span>
+          </div>
+          <div class="dist-bar-track" role="progressbar" [attr.aria-label]="entry.label + ' içerik oranı'"
+            [attr.aria-valuenow]="entry.percentage" aria-valuemin="0" aria-valuemax="100">
+            <div class="dist-bar-fill" [style.width.%]="entry.percentage"></div>
+          </div>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+
+    <section class="gv-card panel-card" aria-labelledby="todo-summary-heading">
+      <div class="panel-header">
+        <h2 id="todo-summary-heading" class="section-title mb-0">Görevlerim Özeti</h2>
+        <a class="panel-link todo-manage-link" routerLink="/gorevler">Görevleri Yönet →</a>
+      </div>
+
+      @if (todoLoadError()) {
+      <div class="alert alert-danger load-error mb-0" role="alert">
+        <p class="mb-1">
+          <strong>Görev verileri yüklenemedi.</strong>
+        </p>
+        <p class="mb-2 small">{{ todoLoadError() }}</p>
+        <button type="button" class="btn btn-sm btn-outline-light" (click)="reloadTodos()">
+          Yeniden dene
+        </button>
+      </div>
+      } @else {
+      <div class="todo-counters">
+        <div class="todo-counter">
+          <span class="todo-counter-label">Toplam</span>
+          <strong class="todo-counter-value" data-todo-stat="total">
+            {{ todoStats().total }}
+          </strong>
+        </div>
+        <div class="todo-counter">
+          <span class="todo-counter-label">Bekleyen</span>
+          <strong class="todo-counter-value" data-todo-stat="pending">
+            {{ todoStats().pending }}
+          </strong>
+        </div>
+        <div class="todo-counter">
+          <span class="todo-counter-label">Tamamlanan</span>
+          <strong class="todo-counter-value" data-todo-stat="completed">
+            {{ todoStats().completed }}
+          </strong>
+        </div>
+      </div>
+
+      @if (todoStats().total === 0) {
+      <p class="empty-message mb-0 mt-3">
+        Henüz görev eklenmedi. Görev yönetimi yakında kullanılabilecek.
+      </p>
+      } @else if (todoStats().recentPending.length > 0) {
+      <ul class="todo-preview-list mt-3" aria-label="Bekleyen görevler">
+        @for (todo of todoStats().recentPending; track todo.id) {
+        <li class="todo-preview-item">{{ todo.title }}</li>
+        }
+      </ul>
+      }
+      }
+    </section>
+  </div>
+</div>

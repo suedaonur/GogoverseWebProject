@@ -1,0 +1,486 @@
+<div class="visually-hidden" role="status" aria-live="polite">
+  {{ notice() }}
+  {{ copyError() }}
+</div>
+
+@if (notice()) {
+  <p class="draft-notice mb-3" aria-hidden="true">{{ notice() }}</p>
+}
+
+@if (sourceParamWarning(); as warning) {
+  <div class="alert alert-warning source-warning mb-4" role="alert">{{ warning }}</div>
+}
+
+@if (contentLoadError()) {
+  <div class="alert alert-danger load-error content-load-error mb-4" role="alert">
+    <p class="mb-1">
+      <strong>
+        İçerik verileri yüklenemedi. Kaynak içerik seçimi şu anda kullanılamıyor.
+      </strong>
+    </p>
+    <p class="mb-2 small">{{ contentLoadError() }}</p>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="reloadContents()">
+      Yeniden dene
+    </button>
+  </div>
+} @else {
+  <section class="gv-card generator-panel mb-4" aria-labelledby="draft-generator-heading">
+    <div class="generator-header mb-3">
+      <h2 id="draft-generator-heading" class="section-title mb-1">
+        Platforma Özel Metin Oluştur
+      </h2>
+      <p class="generator-subtitle mb-0">
+        Kayıtlı bir içeriğini seç, hedef platformu belirle ve düzenlenebilir Türkçe taslak metnini oluştur. Taslak oluşturmak içeriği otomatik yayınlamaz.
+      </p>
+    </div>
+
+    @if (contentItems().length === 0) {
+      <div class="empty-source-box">
+        <p class="mb-3">
+          Henüz içerik kaydın bulunmuyor. Metin taslağı oluşturmak için önce bir içerik eklemelisin.
+        </p>
+        <a class="btn btn-primary btn-sm" routerLink="/icerikler">İçeriklere Git</a>
+      </div>
+    } @else {
+      <div class="row g-3">
+        <div class="col-12">
+          <label for="draft-source-content" class="form-label">Kaynak İçerik</label>
+          <select
+            id="draft-source-content"
+            class="form-select"
+            [value]="effectiveSelectedContentId()"
+            (change)="selectContent($any($event.target).value)"
+          >
+            @for (item of contentItems(); track item.id) {
+              <option [value]="item.id" [selected]="effectiveSelectedContentId() === item.id">
+                {{ item.title }} — {{ platformLabels[item.platform] }} ({{ typeLabels[item.contentType] }} • {{ formatDate(item.date) }})
+              </option>
+            }
+          </select>
+
+          @if (selectedContent(); as source) {
+            <div class="source-summary mt-2" data-selected-source>
+              <span class="platform-badge">
+                <img
+                  class="platform-logo"
+                  [src]="platformLogos[source.platform]"
+                  alt=""
+                  aria-hidden="true"
+                  width="20"
+                  height="20"
+                />
+                <span>{{ platformLabels[source.platform] }}</span>
+              </span>
+              <span>•</span>
+              <span>{{ typeLabels[source.contentType] }}</span>
+              <span>•</span>
+              <span>{{ formatDate(source.date) }} {{ source.time }}</span>
+              <span class="status status-{{ source.status }}">{{ statusLabels[source.status] }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="col-12">
+          <span id="target-platform-label" class="form-label d-block">Hedef Platform</span>
+          <div
+            class="platform-selector-grid"
+            role="group"
+            aria-labelledby="target-platform-label"
+          >
+            @for (option of platformOptions; track option.value) {
+              <button
+                type="button"
+                class="platform-choice-btn"
+                [class.is-active]="selectedPlatform() === option.value"
+                [attr.data-target-platform]="option.value"
+                [attr.aria-pressed]="selectedPlatform() === option.value"
+                (click)="selectTargetPlatform(option.value)"
+              >
+                <span class="platform-badge">
+                  <img
+                    class="platform-logo"
+                    [src]="platformLogos[option.value]"
+                    alt=""
+                    aria-hidden="true"
+                    width="22"
+                    height="22"
+                  />
+                  <span>{{ option.label }}</span>
+                </span>
+                <span class="platform-choice-desc">
+                  {{ templateDescriptions[option.value] }}
+                </span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+          <button
+            id="generate-draft-btn"
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!selectedContent()"
+            (click)="requestGenerate($event)"
+          >
+            Metin Oluştur
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+}
+
+@if (hasPreview()) {
+  <section class="gv-card preview-panel mb-4" aria-labelledby="draft-preview-heading">
+    <div class="preview-header mb-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="platform-badge">
+          <img
+            class="platform-logo"
+            [src]="platformLogos[previewPlatform()]"
+            alt=""
+            aria-hidden="true"
+            width="22"
+            height="22"
+          />
+          <span>{{ templateDescriptions[previewPlatform()] }}</span>
+        </span>
+        @if (editingDraftId()) {
+          <span class="active-badge">Kayıtlı Taslak Düzenleniyor</span>
+        } @else {
+          <span class="soon-badge">Yeni Taslak Önizlemesi</span>
+        }
+      </div>
+      <h2 id="draft-preview-heading" class="section-title mb-0 mt-2">
+        Düzenlenebilir Metin Önizlemesi
+      </h2>
+    </div>
+
+    @if (previewSourceMissing()) {
+      <div class="alert alert-info source-missing-alert mb-3" role="status">
+        Kaynak içerik artık bulunmuyor. Kaydedilmiş taslağın korunuyor.
+      </div>
+    }
+
+    @if (saveError(); as error) {
+      <div class="alert alert-danger save-error mb-3" role="alert">{{ error }}</div>
+    }
+
+    @if (copyError(); as error) {
+      <div class="alert alert-warning copy-error mb-3" role="alert">{{ error }}</div>
+    }
+
+    <div class="row g-3">
+      <div class="col-12">
+        <label for="draft-title" class="form-label">Taslak Adı *</label>
+        <input
+          id="draft-title"
+          type="text"
+          class="form-control"
+          [value]="draftTitle()"
+          [class.is-invalid]="saveSubmitted() && titleValidationError() !== null"
+          [attr.aria-invalid]="saveSubmitted() && titleValidationError() !== null"
+          (input)="onDraftTitleInput($any($event.target).value)"
+        />
+        @if (saveSubmitted() && titleValidationError(); as err) {
+          <div id="draft-title-error" class="invalid-feedback d-block" role="alert">
+            {{ err }}
+          </div>
+        }
+      </div>
+
+      @if (previewPlatform() === 'kick') {
+        <div class="col-12">
+          <div class="field-top-bar">
+            <label for="draft-headline" class="form-label mb-0">Yayın Başlığı *</label>
+            <button
+              id="copy-headline-btn"
+              type="button"
+              class="btn btn-sm btn-outline-light"
+              (click)="copyHeadline()"
+            >
+              Başlığı Kopyala
+            </button>
+          </div>
+          <input
+            id="draft-headline"
+            type="text"
+            class="form-control mt-1"
+            [value]="draftHeadline()"
+            [class.is-invalid]="saveSubmitted() && headlineValidationError() !== null"
+            [attr.aria-invalid]="saveSubmitted() && headlineValidationError() !== null"
+            (input)="onDraftHeadlineInput($any($event.target).value)"
+          />
+          @if (saveSubmitted() && headlineValidationError(); as err) {
+            <div id="draft-headline-error" class="invalid-feedback d-block" role="alert">
+              {{ err }}
+            </div>
+          }
+        </div>
+      }
+
+      <div class="col-12">
+        <div class="field-top-bar">
+          <label for="draft-body" class="form-label mb-0">
+            {{ previewPlatform() === 'kick' ? 'Yayın Açıklaması *' : 'Taslak Metni *' }}
+          </label>
+          <button
+            id="copy-body-btn"
+            type="button"
+            class="btn btn-sm btn-outline-light"
+            (click)="copyBody()"
+          >
+            {{ previewPlatform() === 'kick' ? 'Açıklamayı Kopyala' : 'Metni Kopyala' }}
+          </button>
+        </div>
+        <textarea
+          id="draft-body"
+          rows="8"
+          class="form-control mt-1 draft-textarea"
+          [value]="draftBody()"
+          [class.is-invalid]="saveSubmitted() && bodyValidationError() !== null"
+          [attr.aria-invalid]="saveSubmitted() && bodyValidationError() !== null"
+          (input)="onDraftBodyInput($any($event.target).value)"
+        ></textarea>
+        @if (saveSubmitted() && bodyValidationError(); as err) {
+          <div id="draft-body-error" class="invalid-feedback d-block" role="alert">
+            {{ err }}
+          </div>
+        }
+      </div>
+
+      <div class="col-12 d-flex flex-wrap justify-content-end gap-2">
+        <button
+          id="save-draft-btn"
+          type="button"
+          class="btn btn-primary"
+          [disabled]="draftLoadError() !== null"
+          (click)="saveDraft()"
+        >
+          Taslağı Kaydet
+        </button>
+      </div>
+    </div>
+  </section>
+}
+
+@if (draftLoadError()) {
+  <div class="alert alert-danger load-error draft-load-error mb-4" role="alert">
+    <p class="mb-1">
+      <strong>
+        Metin taslakları yüklenemedi. Mevcut kayıtlarının korunması için veri işlemleri durduruldu.
+      </strong>
+    </p>
+    <p class="mb-2 small">{{ draftLoadError() }}</p>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="reloadDrafts()">
+      Yeniden dene
+    </button>
+  </div>
+} @else {
+  <section aria-labelledby="saved-drafts-heading">
+    <div class="list-header">
+      <h2 id="saved-drafts-heading" class="section-title mb-0">
+        Kaydedilmiş Taslaklar <span class="count">({{ savedDrafts().length }})</span>
+      </h2>
+      @if (savedDrafts().length > 0) {
+        <p class="result-summary mb-0">
+          {{ savedDrafts().length }} taslaktan {{ filteredSavedDrafts().length }} tanesi gösteriliyor.
+        </p>
+      }
+    </div>
+
+    @if (savedDrafts().length > 0) {
+      <div class="gv-card filter-panel mb-3">
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-7">
+            <label for="draft-search" class="form-label">Taslaklarda Ara</label>
+            <input
+              id="draft-search"
+              type="search"
+              class="form-control"
+              placeholder="Taslak adı, içerik veya metin içinde ara..."
+              autocomplete="off"
+              [value]="draftSearchQuery()"
+              (input)="updateDraftSearch($any($event.target).value)"
+            />
+          </div>
+          <div class="col-12 col-md-5">
+            <label for="draft-platform-filter" class="form-label">Platform Filtresi</label>
+            <select
+              id="draft-platform-filter"
+              class="form-select"
+              [value]="draftPlatformFilter()"
+              (change)="updateDraftPlatformFilter($any($event.target).value)"
+            >
+              <option value="" [selected]="draftPlatformFilter() === ''">Tüm Platformlar</option>
+              @for (option of platformOptions; track option.value) {
+                <option [value]="option.value" [selected]="draftPlatformFilter() === option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (savedDrafts().length === 0) {
+      <p class="gv-card empty-state mb-0">
+        Henüz kaydedilmiş bir metin taslağın bulunmuyor. Yukarıdan bir içerik seçip metin oluşturarak kaydedebilirsin.
+      </p>
+    } @else if (filteredSavedDrafts().length === 0) {
+      <div class="gv-card empty-state">
+        <p class="mb-3">Arama ve filtrelerine uygun kaydedilmiş taslak bulunamadı.</p>
+        <button type="button" class="btn btn-sm btn-outline-light" (click)="clearDraftFilters()">
+          Filtreleri Temizle
+        </button>
+      </div>
+    } @else {
+      <ul class="saved-draft-list">
+        @for (draft of filteredSavedDrafts(); track draft.id) {
+          <li class="gv-card saved-draft-card" [attr.data-draft-id]="draft.id">
+            <div class="saved-draft-top">
+              <div class="saved-draft-title-wrap">
+                <span class="platform-badge">
+                  <img
+                    class="platform-logo"
+                    [src]="platformLogos[draft.targetPlatform]"
+                    alt=""
+                    aria-hidden="true"
+                    width="20"
+                    height="20"
+                  />
+                  <span>{{ platformLabels[draft.targetPlatform] }}</span>
+                </span>
+                <h3 class="saved-draft-title">{{ draft.title }}</h3>
+              </div>
+
+              <div class="saved-draft-actions">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-light open-draft-btn"
+                  [attr.aria-label]="'&quot;' + draft.title + '&quot; taslağını düzenle'"
+                  (click)="openSavedDraft(draft)"
+                >
+                  Düzenle
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-light copy-draft-btn"
+                  [attr.aria-label]="'&quot;' + draft.title + '&quot; taslağını kopyala'"
+                  (click)="copySavedDraft(draft)"
+                >
+                  Kopyala
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger delete-draft-btn"
+                  [attr.aria-label]="'&quot;' + draft.title + '&quot; taslağını sil'"
+                  (click)="askDelete(draft, $event)"
+                >
+                  Sil
+                </button>
+              </div>
+            </div>
+
+            @if (draft.sourceTitleSnapshot) {
+              <p class="saved-draft-source mb-1">
+                Kaynak içerik: <strong>{{ draft.sourceTitleSnapshot }}</strong>
+              </p>
+            }
+
+            @if (isDraftSourceMissing(draft)) {
+              <p class="saved-draft-missing mb-2" role="status">
+                Kaynak içerik artık bulunmuyor. Kaydedilmiş taslağın korunuyor.
+              </p>
+            }
+
+            @if (draft.headline) {
+              <p class="saved-draft-headline mb-1">{{ draft.headline }}</p>
+            }
+
+            <pre class="saved-draft-body mb-2">{{ draft.body }}</pre>
+
+            <div class="saved-draft-meta">
+              <span>Oluşturulma: {{ formatDateTime(draft.createdAt) }}</span>
+              <span>•</span>
+              <span>Son güncelleme: {{ formatDateTime(draft.updatedAt) }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}
+
+@if (regenerateConfirmOpen()) {
+  <div class="dialog-backdrop" (click)="cancelRegenerate()"></div>
+  <div
+    #regenerateDialog
+    class="gv-card confirm-dialog regenerate-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="regenerate-dialog-title"
+    aria-describedby="regenerate-dialog-message"
+    (keydown)="trapFocus($event, 'regenerate')"
+  >
+    <h2 id="regenerate-dialog-title" class="dialog-title">Metni yeniden oluştur</h2>
+    <p id="regenerate-dialog-message" class="dialog-message">
+      Mevcut düzenlemelerin değiştirilecek. Metni yeniden oluşturmak istiyor musun?
+    </p>
+    <div class="dialog-actions">
+      <button
+        #cancelRegenerateButton
+        type="button"
+        class="btn btn-outline-light"
+        (click)="cancelRegenerate()"
+      >
+        Vazgeç
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary confirm-regenerate-btn"
+        (click)="confirmRegenerate()"
+      >
+        Yeniden Oluştur
+      </button>
+    </div>
+  </div>
+}
+
+@if (deleteTarget(); as target) {
+  <div class="dialog-backdrop" (click)="cancelDelete()"></div>
+  <div
+    #deleteDialog
+    class="gv-card confirm-dialog delete-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-draft-title"
+    aria-describedby="delete-draft-message"
+    (keydown)="trapFocus($event, 'delete')"
+  >
+    <h2 id="delete-draft-title" class="dialog-title">
+      Bu metin taslağını silmek istiyor musun?
+    </h2>
+    <p id="delete-draft-message" class="dialog-message">
+      Taslak kalıcı olarak kaldırılacak. Kaynak içerik kaydı etkilenmeyecek.
+    </p>
+    @if (deleteError(); as error) {
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+    }
+    <div class="dialog-actions">
+      <button
+        #cancelDeleteButton
+        type="button"
+        class="btn btn-outline-light"
+        (click)="cancelDelete()"
+      >
+        Vazgeç
+      </button>
+      <button type="button" class="btn btn-danger confirm-delete-btn" (click)="confirmDelete()">
+        Taslağı Sil
+      </button>
+    </div>
+  </div>
+}

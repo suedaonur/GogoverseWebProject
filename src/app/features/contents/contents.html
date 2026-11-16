@@ -1,0 +1,532 @@
+<div class="visually-hidden" role="status" aria-live="polite">
+  {{ notice() }}
+  @if (!loadError() && items().length > 0) {
+    {{ items().length }} içerikten {{ filteredItems().length }} tanesi gösteriliyor.
+  }
+</div>
+
+@if (loadError()) {
+  <div class="alert alert-danger load-error" role="alert">
+    <p class="mb-1">
+      <strong>
+        İçerik verileri yüklenemedi. Kayıtlarının korunması için değişiklik işlemleri durduruldu.
+      </strong>
+    </p>
+    <p class="mb-2 small">{{ loadError() }}</p>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="reload()">
+      Yeniden dene
+    </button>
+  </div>
+} @else {
+  <div class="toolbar">
+    @if (notice()) {
+      <p class="notice mb-0" aria-hidden="true">{{ notice() }}</p>
+    }
+    <button
+      #manageTeamButton
+      id="manage-team-btn"
+      type="button"
+      class="btn btn-outline-light"
+      [attr.aria-expanded]="teamManagerOpen()"
+      aria-controls="team-manager-panel"
+      (click)="toggleTeamManager()"
+    >
+      Ekip Üyelerini Yönet ({{ teamUsages().length }})
+    </button>
+    <button
+      #manageTagsButton
+      id="manage-tags-btn"
+      type="button"
+      class="btn btn-outline-light"
+      [attr.aria-expanded]="tagManagerOpen()"
+      aria-controls="tag-manager-panel"
+      (click)="toggleTagManager()"
+    >
+      Etiketleri Yönet ({{ tagUsages().length }})
+    </button>
+    <button
+      #addButton
+      type="button"
+      class="btn btn-primary"
+      [disabled]="editor() !== null && !editor()?.item"
+      (click)="openCreate()"
+    >
+      Yeni İçerik Ekle
+    </button>
+  </div>
+
+  @if (teamManagerOpen()) {
+    <section
+      id="team-manager-panel"
+      class="gv-card tag-manager-panel team-manager-panel mb-4"
+      aria-labelledby="team-manager-heading"
+    >
+      <div class="tag-manager-header mb-3">
+        <h2 id="team-manager-heading" class="tag-manager-title mb-1">Ekip Üyelerini Yönet</h2>
+        <p class="tag-manager-subtitle mb-0">
+          Bir ekip üyesini kaldırdığında içerikler silinmez; tamamlanmış içerikler dahil ilgili tüm kayıtlardan yalnızca seçilen ekip üyesi çıkarılır.
+        </p>
+      </div>
+
+      @if (teamUsages().length === 0) {
+        <p class="tag-manager-empty mb-0">
+          İçeriklerde henüz tanımlanmış bir ekip üyesi bulunmuyor.
+        </p>
+      } @else {
+        <ul class="tag-manager-list team-manager-list" aria-label="Kullanılan ekip üyeleri">
+          @for (member of teamUsages(); track member.key) {
+            <li class="tag-manager-item team-manager-item">
+              <div class="tag-manager-info">
+                <span class="tag-badge team-badge">{{ member.name }}</span>
+                <span class="tag-usage-count">
+                  — {{ member.count }} içerikte
+                </span>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                [attr.aria-label]="member.name + ' ekip üyesini tüm içeriklerden kaldır'"
+                (click)="askDeleteTeamMember(member, $event)"
+              >
+                Sil
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  @if (tagManagerOpen()) {
+    <section
+      id="tag-manager-panel"
+      class="gv-card tag-manager-panel mb-4"
+      aria-labelledby="tag-manager-heading"
+    >
+      <div class="tag-manager-header mb-3">
+        <h2 id="tag-manager-heading" class="tag-manager-title mb-1">Etiketleri Yönet</h2>
+        <p class="tag-manager-subtitle mb-0">
+          Bir etiketi sildiğinde içerikler silinmez; tamamlanmış arşiv içerikleri dahil ilgili tüm kayıtlardan yalnızca seçilen etiket kaldırılır.
+        </p>
+      </div>
+
+      @if (tagUsages().length === 0) {
+        <p class="tag-manager-empty mb-0">
+          İçeriklerde henüz kullanılan bir etiket bulunmuyor.
+        </p>
+      } @else {
+        <ul class="tag-manager-list" aria-label="Kullanılan etiketler">
+          @for (usage of tagUsages(); track usage.key) {
+            <li class="tag-manager-item">
+              <div class="tag-manager-info">
+                <span class="tag-badge">{{ usage.label }}</span>
+                <span class="tag-usage-count">
+                  — {{ usage.count }} içerikte kullanılıyor
+                </span>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                [attr.aria-label]="usage.label + ' etiketini tüm içeriklerden sil'"
+                (click)="askDeleteTag(usage, $event)"
+              >
+                Sil
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  @if (rescheduleError(); as error) {
+    <div class="alert alert-danger reschedule-error mb-4" role="alert">{{ error }}</div>
+  }
+
+  @for (key of formKeys(); track key) {
+    <app-content-form
+      class="d-block mb-4"
+      [item]="editor()?.item"
+      [rescheduleSource]="editor()?.rescheduleSource"
+      [initialDate]="editor()?.initialDate"
+      [serviceError]="formError()"
+      (saved)="save($event)"
+      (cancelled)="closeEditor()"
+    />
+  }
+
+  <section class="gv-card filter-panel mb-4" aria-label="İçerik arama, filtreleme ve sıralama">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-lg-6">
+        <label for="filter-query" class="form-label">İçeriklerde Ara</label>
+        <input
+          id="filter-query"
+          type="search"
+          class="form-control"
+          placeholder="Yayın, oyun, etkinlik veya etiket ara..."
+          autocomplete="off"
+          [value]="filters().query"
+          (input)="updateQuery($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="filter-platform" class="form-label d-flex align-items-center gap-2">
+          <span>Platform</span>
+          @if (filters().platform; as selectedPlatform) {
+            <img
+              class="select-platform-logo"
+              [src]="platformLogos[selectedPlatform]"
+              alt=""
+              aria-hidden="true"
+              width="18"
+              height="18"
+            />
+          }
+        </label>
+        <select
+          id="filter-platform"
+          class="form-select"
+          [value]="filters().platform"
+          (change)="updatePlatform($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().platform === ''">Tüm Platformlar</option>
+          @for (option of platformOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().platform === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="filter-type" class="form-label">İçerik Türü</label>
+        <select
+          id="filter-type"
+          class="form-select"
+          [value]="filters().contentType"
+          (change)="updateContentType($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().contentType === ''">Tüm Türler</option>
+          @for (option of typeOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().contentType === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="filter-status" class="form-label">Durum</label>
+        <select
+          id="filter-status"
+          class="form-select"
+          [value]="filters().status"
+          (change)="updateStatus($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().status === ''">Tüm Durumlar</option>
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().status === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="filter-tag" class="form-label">Etiket</label>
+        <select
+          id="filter-tag"
+          class="form-select"
+          [value]="filters().tag"
+          (change)="updateTag($any($event.target).value)"
+        >
+          <option value="" [selected]="filters().tag === ''">Tüm Etiketler</option>
+          @for (tag of availableTags(); track tag) {
+            <option [value]="tag" [selected]="filters().tag === tag">
+              {{ formatTagLabel(tag) }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="filter-from" class="form-label">Başlangıç Tarihi</label>
+        <input
+          id="filter-from"
+          type="date"
+          class="form-control"
+          [class.is-invalid]="dateRangeInvalid()"
+          [attr.aria-invalid]="dateRangeInvalid()"
+          [attr.aria-describedby]="dateRangeInvalid() ? 'date-range-error' : null"
+          [value]="filters().dateFrom"
+          (input)="updateDateFrom($any($event.target).value)"
+          (change)="updateDateFrom($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <label for="filter-to" class="form-label">Bitiş Tarihi</label>
+        <input
+          id="filter-to"
+          type="date"
+          class="form-control"
+          [class.is-invalid]="dateRangeInvalid()"
+          [attr.aria-invalid]="dateRangeInvalid()"
+          [attr.aria-describedby]="dateRangeInvalid() ? 'date-range-error' : null"
+          [value]="filters().dateTo"
+          (input)="updateDateTo($any($event.target).value)"
+          (change)="updateDateTo($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-4">
+        <label for="filter-sort" class="form-label">Sıralama</label>
+        <select
+          id="filter-sort"
+          class="form-select"
+          [value]="filters().sort"
+          (change)="updateSort($any($event.target).value)"
+        >
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value" [selected]="filters().sort === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-auto ms-lg-auto">
+        <button
+          id="clear-filters"
+          type="button"
+          class="btn btn-outline-light w-100"
+          [disabled]="!hasActiveFilters()"
+          (click)="clearFilters()"
+        >
+          Filtreleri Temizle
+        </button>
+      </div>
+    </div>
+
+    @if (dateRangeInvalid()) {
+      <div id="date-range-error" class="date-range-error mt-2" role="alert">
+        Başlangıç tarihi, bitiş tarihinden sonra olamaz.
+      </div>
+    }
+  </section>
+
+  <section aria-labelledby="content-list-heading">
+    <div class="list-header">
+      <h2 id="content-list-heading" class="list-heading mb-0">
+        Kayıtlı içerikler <span class="count">({{ items().length }})</span>
+      </h2>
+      @if (items().length > 0) {
+        <p class="result-summary mb-0">
+          {{ items().length }} içerikten {{ filteredItems().length }} tanesi gösteriliyor.
+        </p>
+      }
+    </div>
+
+    @if (items().length === 0) {
+      <p class="gv-card empty-state mb-0">
+        Henüz içerik eklenmedi. İlk yayınını veya etkinliğini planlayarak başla!
+      </p>
+    } @else if (filteredItems().length === 0) {
+      <div class="gv-card empty-state filter-empty-state">
+        <p class="mb-3">Arama ve filtrelerine uygun içerik bulunamadı.</p>
+        <button type="button" class="btn btn-sm btn-outline-light" (click)="clearFilters()">
+          Filtreleri Temizle
+        </button>
+      </div>
+    } @else {
+      <div class="gv-card table-wrap">
+        <table class="table gv-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Başlık</th>
+              <th scope="col">Platform</th>
+              <th scope="col">Tür</th>
+              <th scope="col">Oyun / Etkinlik</th>
+              <th scope="col">Tarih</th>
+              <th scope="col">Saat</th>
+              <th scope="col">Durum</th>
+              <th scope="col">Ekip ve etiketler</th>
+              <th scope="col">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id) {
+              <tr>
+                <th scope="row" class="title-cell" data-label="Başlık">{{ item.title }}</th>
+                <td data-label="Platform">
+                  <span class="platform-badge">
+                    <img
+                      class="platform-logo"
+                      [src]="platformLogos[item.platform]"
+                      alt=""
+                      aria-hidden="true"
+                      width="22"
+                      height="22"
+                    />
+                    <span>{{ platformLabels[item.platform] }}</span>
+                  </span>
+                </td>
+                <td data-label="Tür">{{ typeLabels[item.contentType] }}</td>
+                <td data-label="Oyun / Etkinlik">{{ item.gameOrEvent || '—' }}</td>
+                <td data-label="Tarih">{{ formatDate(item.date) }}</td>
+                <td data-label="Saat">{{ item.time }}</td>
+                <td data-label="Durum">
+                  <span class="status status-{{ item.status }}">{{ statusLabels[item.status] }}</span>
+                </td>
+                <td data-label="Ekip ve etiketler" class="meta-cell">
+                  @if (item.team.length === 0 && item.tags.length === 0) {
+                    —
+                  } @else {
+                    @if (item.team.length > 0) {
+                      <div class="meta-line">Ekip: {{ item.team.join(', ') }}</div>
+                    }
+                    @if (item.tags.length > 0) {
+                      <div class="tag-badge-list" aria-label="Etiketler">
+                        @for (tag of item.tags; track tag) {
+                          @if (formatTagLabel(tag); as hashtag) {
+                            <span class="tag-badge">{{ hashtag }}</span>
+                          }
+                        }
+                      </div>
+                    }
+                  }
+                </td>
+                <td data-label="İşlemler" class="actions-cell">
+                  <a
+                    class="btn btn-sm btn-outline-light"
+                    [routerLink]="['/icerikler', item.id]"
+                    [queryParams]="activeQueryParams()"
+                    [attr.aria-label]="'&quot;' + item.title + '&quot; içeriğinin detaylarını gör'"
+                  >
+                    Detayları Gör
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-light"
+                    [attr.aria-label]="'&quot;' + item.title + '&quot; içeriğini düzenle'"
+                    (click)="openEdit(item)"
+                  >
+                    Düzenle
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    [attr.aria-label]="'&quot;' + item.title + '&quot; içeriğini sil'"
+                    (click)="askDelete(item, $event)"
+                  >
+                    Sil
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+}
+
+@if (deleteTarget(); as target) {
+  <div class="dialog-backdrop" (click)="cancelDelete()"></div>
+  <div
+    #deleteDialog
+    class="gv-card delete-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-title"
+    aria-describedby="delete-message"
+    (keydown)="trapFocus($event)"
+  >
+    <h2 id="delete-title" class="dialog-title">İçeriği sil</h2>
+    <p id="delete-message" class="dialog-message">
+      "{{ target.title }}" içeriğini silmek istediğine emin misin?
+    </p>
+    @if (deleteError(); as error) {
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+    }
+    <div class="dialog-actions">
+      <button #cancelDeleteButton type="button" class="btn btn-outline-light" (click)="cancelDelete()">
+        Vazgeç
+      </button>
+      <button type="button" class="btn btn-danger" (click)="confirmDelete()">Sil</button>
+    </div>
+  </div>
+}
+
+@if (deleteTagTarget(); as tagTarget) {
+  <div class="dialog-backdrop" (click)="cancelDeleteTag()"></div>
+  <div
+    #deleteTagDialog
+    class="gv-card delete-dialog delete-tag-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-tag-title"
+    aria-describedby="delete-tag-message"
+    (keydown)="trapFocus($event)"
+  >
+    <h2 id="delete-tag-title" class="dialog-title">
+      {{ tagTarget.label }} etiketini silmek istiyor musun?
+    </h2>
+    <p id="delete-tag-message" class="dialog-message">
+      Bu etiket {{ tagTarget.count }} içerikten kaldırılacak. İçeriklerin kendisi silinmeyecek.
+    </p>
+    @if (deleteTagError(); as error) {
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+    }
+    <div class="dialog-actions">
+      <button
+        #cancelDeleteTagButton
+        type="button"
+        class="btn btn-outline-light"
+        (click)="cancelDeleteTag()"
+      >
+        Vazgeç
+      </button>
+      <button type="button" class="btn btn-danger" (click)="confirmDeleteTag()">
+        Etiketi Sil
+      </button>
+    </div>
+  </div>
+}
+
+@if (deleteTeamTarget(); as teamTarget) {
+  <div class="dialog-backdrop" (click)="cancelDeleteTeamMember()"></div>
+  <div
+    #deleteTeamDialog
+    class="gv-card delete-dialog delete-team-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-team-title"
+    aria-describedby="delete-team-message"
+    (keydown)="trapFocus($event)"
+  >
+    <h2 id="delete-team-title" class="dialog-title">
+      {{ teamTarget.name }} ekip üyesini kaldırmak istiyor musun?
+    </h2>
+    <p id="delete-team-message" class="dialog-message">
+      Bu ekip üyesi {{ teamTarget.count }} içerikten kaldırılacak. İçeriklerin kendisi silinmeyecek.
+    </p>
+    @if (deleteTeamError(); as error) {
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+    }
+    <div class="dialog-actions">
+      <button
+        #cancelDeleteTeamButton
+        type="button"
+        class="btn btn-outline-light"
+        (click)="cancelDeleteTeamMember()"
+      >
+        Vazgeç
+      </button>
+      <button type="button" class="btn btn-danger" (click)="confirmDeleteTeamMember()">
+        Ekip Üyesini Kaldır
+      </button>
+    </div>
+  </div>
+}

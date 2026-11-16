@@ -1,0 +1,362 @@
+<div class="visually-hidden" role="status" aria-live="polite">
+  {{ notice() }}
+  @if (!loadError() && items().length > 0) {
+    {{ totalCount() }} görevden {{ filteredItems().length }} tanesi gösteriliyor.
+  }
+</div>
+
+@if (loadError()) {
+  <div class="alert alert-danger load-error" role="alert">
+    <p class="mb-1">
+      <strong>
+        Görev verileri yüklenemedi. Mevcut kayıtlarının korunması için veri işlemleri durduruldu.
+      </strong>
+    </p>
+    <p class="mb-2 small">{{ loadError() }}</p>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="reload()">
+      Yeniden dene
+    </button>
+  </div>
+} @else {
+  @if (notice()) {
+    <p class="todo-notice mb-3" aria-hidden="true">{{ notice() }}</p>
+  }
+
+  <section class="mb-4" aria-labelledby="todo-stats-heading">
+    <h2 id="todo-stats-heading" class="section-title">Görev İstatistikleri</h2>
+    <div class="row row-cols-1 row-cols-sm-3 g-3">
+      <div class="col">
+        <article class="gv-card stat-card stat-total h-100">
+          <div class="stat-top">
+            <span class="stat-label">Toplam Görev</span>
+            <span class="stat-icon" aria-hidden="true">◈</span>
+          </div>
+          <p class="stat-value mb-0" data-todo-stat="total">{{ totalCount() }}</p>
+        </article>
+      </div>
+
+      <div class="col">
+        <article class="gv-card stat-card stat-pending h-100">
+          <div class="stat-top">
+            <span class="stat-label">Bekleyen</span>
+            <span class="stat-icon" aria-hidden="true">◷</span>
+          </div>
+          <p class="stat-value mb-0" data-todo-stat="pending">{{ pendingCount() }}</p>
+        </article>
+      </div>
+
+      <div class="col">
+        <article class="gv-card stat-card stat-completed h-100">
+          <div class="stat-top">
+            <span class="stat-label">Tamamlanan</span>
+            <span class="stat-icon" aria-hidden="true">✓</span>
+          </div>
+          <p class="stat-value mb-0" data-todo-stat="completed">{{ completedCount() }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="gv-card create-panel mb-4" aria-labelledby="new-todo-heading">
+    <h2 id="new-todo-heading" class="panel-heading mb-3">Yeni Görev Ekle</h2>
+
+    @if (createError(); as error) {
+      <div class="alert alert-danger create-error mb-3" role="alert">{{ error }}</div>
+    }
+
+    <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
+      <div class="row g-3">
+        <div class="col-12">
+          <label for="todo-title" class="form-label">Görev Başlığı *</label>
+          <input
+            id="todo-title"
+            type="text"
+            class="form-control"
+            formControlName="title"
+            placeholder="Cuma Kick yayınının görsellerini hazırla"
+            [class.is-invalid]="createFieldInvalid('title')"
+            [attr.aria-invalid]="createFieldInvalid('title')"
+            [attr.aria-describedby]="createFieldInvalid('title') ? 'todo-title-error' : null"
+          />
+          @if (createFieldInvalid('title')) {
+            <div id="todo-title-error" class="invalid-feedback d-block" role="alert">
+              @if (createForm.controls.title.errors?.['maxlength']) {
+                Görev başlığı en fazla {{ maxTitleLength }} karakter olabilir.
+              } @else {
+                Görev başlığı boş olamaz.
+              }
+            </div>
+          }
+        </div>
+
+        <div class="col-12">
+          <label for="todo-description" class="form-label">Açıklama (İsteğe bağlı)</label>
+          <textarea
+            id="todo-description"
+            rows="2"
+            class="form-control"
+            formControlName="description"
+            placeholder="Yayın kapağını kontrol et ve Discord duyurusunu hazırlamayı unutma."
+            [class.is-invalid]="createFieldInvalid('description')"
+            [attr.aria-invalid]="createFieldInvalid('description')"
+            [attr.aria-describedby]="createFieldInvalid('description') ? 'todo-desc-error' : null"
+          ></textarea>
+          @if (createFieldInvalid('description')) {
+            <div id="todo-desc-error" class="invalid-feedback d-block" role="alert">
+              Görev açıklaması en fazla {{ maxDescriptionLength }} karakter olabilir.
+            </div>
+          }
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary">Görev Ekle</button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <section class="gv-card filter-panel mb-4" aria-label="Görev arama ve durum filtreleme">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-lg-6">
+        <label for="todo-search" class="form-label">Görevlerde Ara</label>
+        <input
+          id="todo-search"
+          type="search"
+          class="form-control"
+          placeholder="Görev başlığı veya açıklamasında ara..."
+          autocomplete="off"
+          [value]="searchQuery()"
+          (input)="updateSearch($any($event.target).value)"
+        />
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <span id="todo-filter-group-label" class="form-label d-block">Görünüm Filtresi</span>
+        <div
+          class="filter-tabs"
+          role="group"
+          aria-labelledby="todo-filter-group-label"
+        >
+          @for (option of filterOptions; track option.value) {
+            <button
+              type="button"
+              class="filter-tab-btn"
+              [class.is-active]="statusFilter() === option.value"
+              [attr.data-filter]="option.value"
+              [attr.aria-pressed]="statusFilter() === option.value"
+              (click)="setStatusFilter(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  @if (toggleError(); as error) {
+    <div class="alert alert-danger toggle-error mb-3" role="alert">{{ error }}</div>
+  }
+
+  <section aria-labelledby="todo-list-heading">
+    <div class="list-header">
+      <h2 id="todo-list-heading" class="list-heading mb-0">
+        Görev Listesi <span class="count">({{ totalCount() }})</span>
+      </h2>
+      @if (totalCount() > 0) {
+        <p class="result-summary mb-0">
+          {{ totalCount() }} görevden {{ filteredItems().length }} tanesi gösteriliyor.
+        </p>
+      }
+    </div>
+
+    @if (filteredItems().length === 0) {
+      <div class="gv-card empty-state">
+        <p class="mb-0">{{ emptyMessage() }}</p>
+        @if (totalCount() > 0 && (searchQuery().trim().length > 0 || statusFilter() !== 'all')) {
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-light mt-3"
+            (click)="clearSearchAndFilter()"
+          >
+            Tüm Görevleri Göster
+          </button>
+        }
+      </div>
+    } @else {
+      <ul class="todo-list">
+        @for (todo of filteredItems(); track todo.id) {
+          <li
+            class="gv-card todo-item"
+            [class.is-completed]="todo.isCompleted"
+            [attr.data-todo-id]="todo.id"
+          >
+            @if (editingId() === todo.id) {
+              <form
+                class="todo-edit-form"
+                [formGroup]="editForm"
+                (ngSubmit)="submitEdit(todo.id)"
+                novalidate
+              >
+                <h3 class="edit-heading mb-2">Görevi Düzenle</h3>
+
+                @if (editError(); as error) {
+                  <div class="alert alert-danger edit-error mb-2" role="alert">{{ error }}</div>
+                }
+
+                <div class="mb-2">
+                  <label [for]="'edit-title-' + todo.id" class="form-label">Görev Başlığı *</label>
+                  <input
+                    [id]="'edit-title-' + todo.id"
+                    type="text"
+                    class="form-control edit-title-input"
+                    formControlName="title"
+                    [class.is-invalid]="editFieldInvalid('title')"
+                    [attr.aria-invalid]="editFieldInvalid('title')"
+                  />
+                  @if (editFieldInvalid('title')) {
+                    <div class="invalid-feedback d-block" role="alert">
+                      @if (editForm.controls.title.errors?.['maxlength']) {
+                        Görev başlığı en fazla {{ maxTitleLength }} karakter olabilir.
+                      } @else {
+                        Görev başlığı boş olamaz.
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="mb-3">
+                  <label [for]="'edit-desc-' + todo.id" class="form-label">
+                    Açıklama (İsteğe bağlı)
+                  </label>
+                  <textarea
+                    [id]="'edit-desc-' + todo.id"
+                    rows="2"
+                    class="form-control edit-desc-input"
+                    formControlName="description"
+                    [class.is-invalid]="editFieldInvalid('description')"
+                    [attr.aria-invalid]="editFieldInvalid('description')"
+                  ></textarea>
+                  @if (editFieldInvalid('description')) {
+                    <div class="invalid-feedback d-block" role="alert">
+                      Görev açıklaması en fazla {{ maxDescriptionLength }} karakter olabilir.
+                    </div>
+                  }
+                </div>
+
+                <div class="edit-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-light"
+                    (click)="cancelEdit()"
+                  >
+                    Vazgeç
+                  </button>
+                  <button type="submit" class="btn btn-sm btn-primary">Kaydet</button>
+                </div>
+              </form>
+            } @else {
+              <div class="todo-row">
+                <div class="todo-check-wrap">
+                  <input
+                    type="checkbox"
+                    class="form-check-input todo-checkbox"
+                    [id]="'todo-check-' + todo.id"
+                    [checked]="todo.isCompleted"
+                    [attr.aria-label]="
+                      todo.isCompleted
+                        ? '&quot;' + todo.title + '&quot; görevini yeniden beklemeye al'
+                        : '&quot;' + todo.title + '&quot; görevini tamamlandı olarak işaretle'
+                    "
+                    (change)="onToggleCompleted(todo, $event)"
+                  />
+                </div>
+
+                <div class="todo-body">
+                  <div class="todo-top">
+                    <label [for]="'todo-check-' + todo.id" class="todo-title">
+                      {{ todo.title }}
+                    </label>
+                    @if (todo.isCompleted) {
+                      <span class="status status-completed todo-status-badge">
+                        <span class="todo-check-icon" aria-hidden="true">✓</span>
+                        <span>Tamamlandı</span>
+                      </span>
+                    } @else {
+                      <span class="status todo-status-badge">Bekliyor</span>
+                    }
+                  </div>
+
+                  @if (todo.description) {
+                    <p class="todo-description mb-0">{{ todo.description }}</p>
+                  }
+
+                  <div class="todo-meta">
+                    <span>Oluşturulma: {{ formatTimestamp(todo.createdAt) }}</span>
+                    @if (todo.isCompleted && todo.completedAt) {
+                      <span>•</span>
+                      <span>Tamamlanma: {{ formatTimestamp(todo.completedAt) }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="todo-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-light edit-todo-btn"
+                    [attr.aria-label]="'&quot;' + todo.title + '&quot; görevini düzenle'"
+                    (click)="startEdit(todo)"
+                  >
+                    Düzenle
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger delete-todo-btn"
+                    [attr.aria-label]="'&quot;' + todo.title + '&quot; görevini sil'"
+                    (click)="askDelete(todo, $event)"
+                  >
+                    Sil
+                  </button>
+                </div>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}
+
+@if (deleteTarget(); as target) {
+  <div class="dialog-backdrop" (click)="cancelDelete()"></div>
+  <div
+    #deleteDialog
+    class="gv-card delete-dialog"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="delete-todo-title"
+    aria-describedby="delete-todo-message"
+    (keydown)="trapFocus($event)"
+  >
+    <h2 id="delete-todo-title" class="dialog-title">Bu görevi silmek istiyor musun?</h2>
+    <p id="delete-todo-message" class="dialog-message">
+      Bu işlem geri alınamaz. "{{ target.title }}" görevi kalıcı olarak kaldırılacak.
+    </p>
+    @if (deleteError(); as error) {
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+    }
+    <div class="dialog-actions">
+      <button
+        #cancelDeleteButton
+        type="button"
+        class="btn btn-outline-light"
+        (click)="cancelDelete()"
+      >
+        Vazgeç
+      </button>
+      <button type="button" class="btn btn-danger confirm-delete-btn" (click)="confirmDelete()">
+        Görevi Sil
+      </button>
+    </div>
+  </div>
+}
